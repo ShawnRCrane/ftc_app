@@ -48,11 +48,11 @@ public class K9TankDrive extends OpMode {
 	 * as the arm servo approaches 0, the arm position moves up (away from the floor).
 	 * Also, as the claw servo approaches 0, the claw opens up (drops the game element).
 	 */
-    // TETRIX VALUES.
-    final static double ARM_MIN_RANGE  = 0.20;
-    final static double ARM_MAX_RANGE  = 0.90;
-    final static double CLAW_MIN_RANGE  = 0.20;
-    final static double CLAW_MAX_RANGE  = 0.7;
+	// TETRIX VALUES.
+	final static double ARM_MIN_RANGE  = 0.20;
+	final static double ARM_MAX_RANGE  = 0.90;
+	final static double CLAW_MIN_RANGE  = 0.20;
+	final static double CLAW_MAX_RANGE  = 0.7;
 
 	// position of the arm servo.
 	double armPosition;
@@ -128,10 +128,10 @@ public class K9TankDrive extends OpMode {
 		 * wrist/claw via the a,b, x, y buttons
 		 */
 
-        // tank drive
-        // note that if y equal -1 then joystick is pushed all of the way forward.
-        float left = -gamepad1.left_stick_y;
-        float right = -gamepad1.right_stick_y;
+		// tank drive
+		// note that if y equal -1 then joystick is pushed all of the way forward.
+		float left = -gamepad1.left_stick_y;
+		float right = -gamepad1.right_stick_y;
 
 		// clip the right/left values so that the values never exceed +/- 1
 		right = Range.clip(right, -1, 1);
@@ -159,18 +159,18 @@ public class K9TankDrive extends OpMode {
 			armPosition -= armDelta;
 		}
 
-        // update the position of the claw
-        if (gamepad1.left_bumper) {
-            clawPosition += clawDelta;
-        }
+		// update the position of the claw
+		if (gamepad1.left_bumper) {
+			clawPosition += clawDelta;
+		}
 
-        if (gamepad1.left_trigger > 0.25) {
-            clawPosition -= clawDelta;
-        }
+		if (gamepad1.left_trigger > 0.25) {
+			clawPosition -= clawDelta;
+		}
 
-        if (gamepad1.b) {
-            clawPosition -= clawDelta;
-        }
+		if (gamepad1.b) {
+			clawPosition -= clawDelta;
+		}
 
 		// update the position of the claw
 		if (gamepad1.x) {
@@ -197,8 +197,8 @@ public class K9TankDrive extends OpMode {
 		 */
 
 		telemetry.addData("Text", "*** Robot Data***");
-        telemetry.addData("arm", "arm:  " + String.format("%.2f", armPosition));
-        telemetry.addData("claw", "claw:  " + String.format("%.2f", clawPosition));
+		telemetry.addData("arm", "arm:  " + String.format("%.2f", armPosition));
+		telemetry.addData("claw", "claw:  " + String.format("%.2f", clawPosition));
 		telemetry.addData("left tgt pwr",  "left  pwr: " + String.format("%.2f", left));
 		telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
 	}
