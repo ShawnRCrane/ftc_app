@@ -1,74 +1,143 @@
-/* Copyright (c) 2014, 2015 Qualcomm Technologies Inc
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted (subject to the limitations in the disclaimer below) provided that
-the following conditions are met:
-
-Redistributions of source code must retain the above copyright notice, this list
-of conditions and the following disclaimer.
-
-Redistributions in binary form must reproduce the above copyright notice, this
-list of conditions and the following disclaimer in the documentation and/or
-other materials provided with the distribution.
-
-Neither the name of Qualcomm Technologies Inc nor the names of its contributors
-may be used to endorse or promote products derived from this software without
-specific prior written permission.
-
-NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
-LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-/**
- * TeleOp Mode
- * <p>
- *Enables control of the robot via the gamepad
- */
 public class NullOp extends OpMode {
-
-  private String startDate;
-  private ElapsedTime runtime = new ElapsedTime();
+  Servo doorServoL;
+  Servo doorServoR;
+  Servo scoopServo;
+  DcMotor motorRight;
+  DcMotor motorLeft;
+  DcMotor motorVertical;
+  DcMotor motorExtend;
+  DcMotor motorRetract;
+  GyroSensor gyro;
+  TouchSensor touch;
+  double scoopZero;
+  double rDoorZero;
+  double lDoorZero;
 
   @Override
   public void init() {
+    motorRight = hardwareMap.dcMotor.get("motorRight");
+    motorLeft = hardwareMap.dcMotor.get("motorLeft");
+    motorVertical = hardwareMap.dcMotor.get("motorVertical");
+    motorExtend = hardwareMap.dcMotor.get("motorExtend");
+    motorRetract = hardwareMap.dcMotor.get("motorRetract");
+    motorLeft.setDirection(DcMotor.Direction.REVERSE);
+    gyro = hardwareMap.gyroSensor.get("gyro");
+    touch = hardwareMap.touchSensor.get("touch");
+    scoopServo = hardwareMap.servo.get("scoopServo");
+    scoopZero = scoopServo.getPosition();
+    rDoorZero = doorServoR.getPosition();
+    lDoorZero = doorServoL.getPosition();
+    gyro.calibrate();
   }
 
-  /*
-     * Code to run when the op mode is first enabled goes here
-     * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
-     */
-  @Override
-  public void init_loop() {
-    startDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-    runtime.reset();
-    telemetry.addData("Null Op Init Loop", runtime.toString());
-  }
-
-  /*
-   * This method will be called repeatedly in a loop
-   * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#loop()
-   */
   @Override
   public void loop() {
-    telemetry.addData("1 Start", "NullOp started at " + startDate);
-    telemetry.addData("2 Status", "running for " + runtime.toString());
+    //*************SET VALUABLES*************\\
+    float leftStick = gamepad1.left_stick_y * (float) 1.1;
+    float rightStick = gamepad1.right_stick_y * (float) 1.1;
+    float rightStick2 = gamepad2.right_stick_y / (float) 1.5;
+    float rightTrigger2 = gamepad2.right_trigger;
+    double leftStick2 = gamepad2.left_stick_x / 1.8;
+    float leftTrigger2 = gamepad2.left_trigger;
+    boolean rightBumper2 = gamepad2.right_bumper;
+    boolean leftBumper2 = gamepad2.left_bumper;
+    boolean buttonY2 = gamepad2.y;
+
+
+
+    //*************PRINT TO PHONE*************\\
+    telemetry.addData("Heading", gyro.getHeading());
+    telemetry.addData("RawX", gyro.rawX());
+    telemetry.addData("RawY", gyro.rawY());
+    telemetry.addData("RawZ", gyro.rawZ());
+    telemetry.addData("Touch", touch.getValue());
+    telemetry.addData("ServoLeft", doorServoL.getPosition());
+    telemetry.addData("ServoRight",doorServoR.getPosition());
+    telemetry.addData("ScoopServo", scoopServo.getPosition());
+
+    //*************DRIVER CODE*************\\
+    if (rightStick < 0.20 && rightStick > -0.20) //First Dead-Zone for the Right Motor
+      rightStick = 0;
+    if (leftStick < 0.20 && leftStick > -0.20) //Dead-Zone for the Left Motor
+      leftStick = 0;
+    if (rightStick > 0.95) //Second Dead-Zone for the Right Motor
+      rightStick = 1;
+    if (rightStick < -0.95)
+      rightStick = -1;
+    if (leftStick > 0.95) //Second Dead-Zone for the Left Motor
+      leftStick = 1;
+    if (leftStick < -0.95)
+      leftStick = -1;
+
+    //Set the drive motors
+    motorRight.setPower(-rightStick);
+    motorLeft.setPower(-leftStick);
+
+
+/*
+        motorRetract.setPower(leftTrigger2);
+        motorExtend.setPower(-rightTrigger2);
+        if (leftBumper2)
+            motorRetract.setPower(-1);
+        if (rightBumper2)
+            motorExtend.setPower(1);
+*/
+
+    //*************OPERATOR CODE*************\\
+
+    //Scoop Servos
+    scoopServo.setPosition(scoopZero + (leftStick2 / (float) 3.75));
+
+
+
+
+    //Logic to extend and retract the arm
+    if (buttonY2) //If the Y button is pressed take up slack
+    {
+      if (rightTrigger2 > 0.20)
+      {
+        motorRetract.setPower(rightTrigger2);
+      }
+      else if (leftTrigger2 > 0.20)
+      {
+        motorExtend.setPower(-leftTrigger2);
+      }
+      else
+      {
+        motorExtend.setPower(0);
+        motorRetract.setPower(0);
+      }
+    }
+    else //else extend or retract the arm
+    {
+      if (rightTrigger2 > 0.20) {
+        motorRetract.setPower(rightTrigger2);
+        motorExtend.setPower(rightTrigger2 - (rightTrigger2 / (float) 1.75));
+      } else if (leftTrigger2 > 0.20) {
+        motorExtend.setPower(-leftTrigger2);
+        motorRetract.setPower(-leftTrigger2 + (leftTrigger2 / (float) 1.4));
+      }
+      else
+      {
+        motorExtend.setPower(0);
+        motorRetract.setPower(0);
+      }
+    }
+    if (touch.isPressed() && rightStick2 > 0) //Arm safety code
+      rightStick2 = 0;
+
+    //Set the motor that raises and lowers the arm
+    if (rightStick2 < 0.10 && rightStick2 > -0.10)
+      rightStick2 = 0;
+    motorVertical.setPower(rightStick2);
   }
+
 }

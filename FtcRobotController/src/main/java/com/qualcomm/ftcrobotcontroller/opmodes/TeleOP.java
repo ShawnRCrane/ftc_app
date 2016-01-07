@@ -4,11 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 public class TeleOP extends OpMode {
-
+    Servo doorServoL;
+    Servo doorServoR;
     Servo scoopServo;
     DcMotor motorRight;
     DcMotor motorLeft;
@@ -17,6 +17,9 @@ public class TeleOP extends OpMode {
     DcMotor motorRetract;
     GyroSensor gyro;
     TouchSensor touch;
+    double scoopZero;
+    double rDoorZero;
+    double lDoorZero;
 
     @Override
     public void init() {
@@ -29,15 +32,17 @@ public class TeleOP extends OpMode {
         gyro = hardwareMap.gyroSensor.get("gyro");
         touch = hardwareMap.touchSensor.get("touch");
         scoopServo = hardwareMap.servo.get("scoopServo");
+        doorServoL = hardwareMap.servo.get("doorServoL");
+        doorServoR = hardwareMap.servo.get("doorServoR");
         gyro.calibrate();
     }
 
     @Override
     public void loop() {
         //*************SET VALUABLES*************\\
-        float leftStick = gamepad1.left_stick_y;
-        float rightStick = gamepad1.right_stick_y;
-        float rightStick2 = gamepad2.right_stick_y;
+        float leftStick = gamepad1.left_stick_y * (float) 1.1;
+        float rightStick = gamepad1.right_stick_y * (float) 1.1;
+        float rightStick2 = gamepad2.right_stick_y / (float) 1.5;
         float rightTrigger2 = gamepad2.right_trigger;
         double leftStick2 = gamepad2.left_stick_x / 1.8;
         float leftTrigger2 = gamepad2.left_trigger;
@@ -45,16 +50,20 @@ public class TeleOP extends OpMode {
         boolean leftBumper2 = gamepad2.left_bumper;
         boolean buttonY2 = gamepad2.y;
 
+
+
         //*************PRINT TO PHONE*************\\
         telemetry.addData("Heading", gyro.getHeading());
         telemetry.addData("RawX", gyro.rawX());
         telemetry.addData("RawY", gyro.rawY());
         telemetry.addData("RawZ", gyro.rawZ());
         telemetry.addData("Touch", touch.getValue());
-
+        telemetry.addData("ServoLeft", doorServoL.getPosition());
+        telemetry.addData("ServoRight",doorServoR.getPosition());
+        telemetry.addData("ScoopServo", scoopServo.getPosition());
 
         //*************DRIVER CODE*************\\
-        if (rightStick < 0.20 && rightStick > -0.20) //Dead-Zone for the Right Motor
+        if (rightStick < 0.20 && rightStick > -0.20) //First Dead-Zone for the Right Motor
             rightStick = 0;
         if (leftStick < 0.20 && leftStick > -0.20) //Dead-Zone for the Left Motor
             leftStick = 0;
@@ -83,12 +92,18 @@ public class TeleOP extends OpMode {
 
         //*************OPERATOR CODE*************\\
 
+        //Scoop Servos
+        scoopServo.setPosition(0.5 + (leftStick2 / (float) 3.75));
+        doorServoL.setPosition(0);
+        doorServoR.setPosition(1);
+
+
         //Logic to extend and retract the arm
         if (buttonY2) //If the Y button is pressed take up slack
         {
             if (rightTrigger2 > 0.20)
             {
-                motorExtend.setPower(rightTrigger2);
+                motorRetract.setPower(rightTrigger2);
             }
             else if (leftTrigger2 > 0.20)
             {
@@ -104,10 +119,10 @@ public class TeleOP extends OpMode {
         {
             if (rightTrigger2 > 0.20) {
                 motorRetract.setPower(rightTrigger2);
-                motorExtend.setPower(rightTrigger2 - (rightTrigger2 / 1.75));
+                motorExtend.setPower(rightTrigger2 - (rightTrigger2 / (float) 1.75));
             } else if (leftTrigger2 > 0.20) {
                 motorExtend.setPower(-leftTrigger2);
-                motorRetract.setPower(-leftTrigger2 + (leftTrigger2 / 1.5));
+                motorRetract.setPower(-leftTrigger2 + (leftTrigger2 / (float) 1.4));
             }
             else
             {
