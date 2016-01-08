@@ -17,7 +17,7 @@ public class TeleOP extends OpMode {
     DcMotor motorRetract;
     GyroSensor gyro;
     TouchSensor touch;
-    double scoopZero;
+    double scoopZero = 0.5;
     double rDoorZero;
     double lDoorZero;
 
@@ -34,6 +34,8 @@ public class TeleOP extends OpMode {
         scoopServo = hardwareMap.servo.get("scoopServo");
         doorServoL = hardwareMap.servo.get("doorServoL");
         doorServoR = hardwareMap.servo.get("doorServoR");
+        doorServoL.setPosition(0);
+        doorServoR.setPosition(1);
         gyro.calibrate();
     }
 
@@ -62,6 +64,7 @@ public class TeleOP extends OpMode {
         telemetry.addData("ServoRight",doorServoR.getPosition());
         telemetry.addData("ScoopServo", scoopServo.getPosition());
 
+
         //*************DRIVER CODE*************\\
         if (rightStick < 0.20 && rightStick > -0.20) //First Dead-Zone for the Right Motor
             rightStick = 0;
@@ -81,22 +84,19 @@ public class TeleOP extends OpMode {
         motorLeft.setPower(-leftStick);
 
 
-/*
-        motorRetract.setPower(leftTrigger2);
-        motorExtend.setPower(-rightTrigger2);
-        if (leftBumper2)
-            motorRetract.setPower(-1);
-        if (rightBumper2)
-            motorExtend.setPower(1);
-*/
 
         //*************OPERATOR CODE*************\\
 
         //Scoop Servos
-        scoopServo.setPosition(0.5 + (leftStick2 / (float) 3.75));
-        doorServoL.setPosition(0);
-        doorServoR.setPosition(1);
-
+        scoopServo.setPosition(scoopZero - (leftStick2 / (float) 4));
+        if (rightBumper2) {
+            doorServoL.setPosition(0.75);
+            doorServoR.setPosition(0.25);
+        }
+        if (leftBumper2) {
+            doorServoL.setPosition(0);
+            doorServoR.setPosition(1);
+        }
 
         //Logic to extend and retract the arm
         if (buttonY2) //If the Y button is pressed take up slack
@@ -119,10 +119,10 @@ public class TeleOP extends OpMode {
         {
             if (rightTrigger2 > 0.20) {
                 motorRetract.setPower(rightTrigger2);
-                motorExtend.setPower(rightTrigger2 - (rightTrigger2 / (float) 1.75));
+                motorExtend.setPower(rightTrigger2 - ((double) rightTrigger2 / (double) 1.700));
             } else if (leftTrigger2 > 0.20) {
                 motorExtend.setPower(-leftTrigger2);
-                motorRetract.setPower(-leftTrigger2 + (leftTrigger2 / (float) 1.4));
+                motorRetract.setPower(-leftTrigger2 + ((double) leftTrigger2 / (double) 1.420691337101)); //LOL xD
             }
             else
             {

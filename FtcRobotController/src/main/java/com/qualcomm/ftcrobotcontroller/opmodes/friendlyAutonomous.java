@@ -8,8 +8,10 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-
 public class friendlyAutonomous extends LinearOpMode {
+
+    public  void runProgram() {}
+
     Servo doorServoL;
     Servo doorServoR;
     Servo scoopServo;
@@ -45,7 +47,7 @@ public class friendlyAutonomous extends LinearOpMode {
         waitForStart();
 
         //#############CODE#################
-        `
+
 
     }
 }
