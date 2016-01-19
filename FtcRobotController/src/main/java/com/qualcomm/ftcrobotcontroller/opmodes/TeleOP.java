@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 
 public class TeleOP extends OpMode {
     Servo doorServoL;
@@ -15,20 +16,23 @@ public class TeleOP extends OpMode {
     DcMotor motorVertical;
     DcMotor motorExtend;
     DcMotor motorRetract;
+    DcMotor motorRight2;
+    DcMotor motorLeft2;
     GyroSensor gyro;
     TouchSensor touch;
     double scoopZero = 0.5;
-    double rDoorZero;
-    double lDoorZero;
 
     @Override
     public void init() {
         motorRight = hardwareMap.dcMotor.get("motorRight");
         motorLeft = hardwareMap.dcMotor.get("motorLeft");
+        motorRight2 = hardwareMap.dcMotor.get("motorRight2");
+        motorLeft2 = hardwareMap.dcMotor.get("motorLeft2");
         motorVertical = hardwareMap.dcMotor.get("motorVertical");
         motorExtend = hardwareMap.dcMotor.get("motorExtend");
         motorRetract = hardwareMap.dcMotor.get("motorRetract");
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        motorLeft2.setDirection(DcMotor.Direction.REVERSE);
         gyro = hardwareMap.gyroSensor.get("gyro");
         touch = hardwareMap.touchSensor.get("touch");
         scoopServo = hardwareMap.servo.get("scoopServo");
@@ -36,6 +40,7 @@ public class TeleOP extends OpMode {
         doorServoR = hardwareMap.servo.get("doorServoR");
         doorServoL.setPosition(0);
         doorServoR.setPosition(1);
+        scoopServo.setPosition(0.5);
         gyro.calibrate();
     }
 
@@ -63,6 +68,7 @@ public class TeleOP extends OpMode {
         telemetry.addData("ServoLeft", doorServoL.getPosition());
         telemetry.addData("ServoRight",doorServoR.getPosition());
         telemetry.addData("ScoopServo", scoopServo.getPosition());
+        telemetry.addData("pos", motorLeft2.getCurrentPosition());
 
 
         //*************DRIVER CODE*************\\
@@ -79,10 +85,12 @@ public class TeleOP extends OpMode {
         if (leftStick < -0.95)
             leftStick = -1;
 
-        //Set the drive motors
-        motorRight.setPower(-rightStick);
-        motorLeft.setPower(-leftStick);
 
+        //Set the drive motors
+        motorRight.setPower(rightStick);
+        motorLeft.setPower(leftStick);
+        motorRight2.setPower(rightStick);
+        motorLeft2.setPower(leftStick);
 
 
         //*************OPERATOR CODE*************\\
